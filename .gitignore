@@ -1,0 +1,25 @@
+# Environments
+.venv/
+env/
+venv/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+
+# IDE & OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Reconstruction Cache & Data
+data/
+outputs/
+*_splat/
+colmap_workspace/
+roomsplat/

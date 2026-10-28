@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Namma Space — Autonomous 3D Digital Twins from Smartphone Video</title>
+  <meta name="description" content="Namma Space reconstructs photorealistic, navigable 3D digital twins of indoor real estate from standard smartphone walkthrough videos using 3D Gaussian Splatting.">
+  <link rel="stylesheet" href="./styles.css">
+  <script src="./coi-serviceworker.js"></script>
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+    }
+  }
+  </script>
+</head>
+<body>
+
+  <!-- ========================================================================= -->
+  <!-- VIEW 1: NAMMA SPACE LANDING & CAPTURE WORKFLOW PORTAL                     -->
+  <!-- ========================================================================= -->
+  <div id="landing-view" class="view-section">
+    
+    <!-- Navigation Bar -->
+    <header class="navbar">
+      <a href="#home" class="nav-brand">
+        <div class="nav-logo-icon">NS</div>
+        <span class="nav-title">Namma Space</span>
+        <span class="nav-badge">Round 1</span>
+      </a>
+
+      <nav class="nav-links">
+        <a href="#workflow" class="nav-link">Capture SOP</a>
+        <a href="#pipeline" class="nav-link">Architecture</a>
+        <a href="#specs" class="nav-link">Specifications</a>
+        <button id="nav-btn-launch" class="btn-primary">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+          Launch 3D Twin
+        </button>
+      </nav>
+    </header>
+
+    <!-- Hero Section -->
+    <main id="home" class="hero">
+      <div class="hero-pill">
+        <span class="hero-pill-dot"></span>
+        Techfest IIT Bombay 2026–27 | Namma Space
+      </div>
+
+      <h1 class="hero-title">
+        Autonomous 3D Spatial Twins<br>From Smartphone Video.
+      </h1>
+
+      <p class="hero-subtitle">
+        Transform ordinary indoor smartphone walkthroughs into navigable, photorealistic 
+        3D Gaussian radiance fields. Instant browser roaming with zero cloud dependencies at inference.
+      </p>
+
+      <div class="hero-actions">
+        <button id="hero-btn-launch" class="btn-primary" style="padding: 12px 28px; font-size: 1rem;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+          Explore Reconstructed Room
+        </button>
+        <a href="#workflow" class="btn-secondary" style="padding: 12px 24px; font-size: 0.95rem;">
+          View Capture Workflow
+        </a>
+      </div>
+
+      <!-- Preview Window Mockup -->
+      <div class="hero-preview-card">
+        <div class="hero-preview-header">
+          <div class="window-dots">
+            <span class="dot dot-red"></span>
+            <span class="dot dot-yellow"></span>
+            <span class="dot dot-green"></span>
+          </div>
+          <span>NammaSpace WebGL2 Viewer — 369,006 Gaussians @ 60 FPS</span>
+          <span style="font-family: var(--font-mono); color: var(--accent-cyan);">WASD FLY MODE</span>
+        </div>
+        <div class="hero-preview-content">
+          <img src="../docs/viewer_roaming_verification.png" alt="Namma Space 3D Viewer Roaming Telemetry" class="hero-preview-img" onerror="this.style.display='none'">
+          <div class="hero-preview-overlay">
+            <button id="preview-btn-play" class="btn-primary" style="padding: 14px 28px; font-size: 1rem; border-radius: 30px;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+              Enter Interactive 3D Room
+            </button>
+            <span style="color: var(--text-muted); font-size: 0.85rem;">Left-Drag Orbit &bull; Right-Drag Pan &bull; WASD First-Person Fly</span>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Capture Workflow Section -->
+    <section id="workflow" class="section-wrapper" style="border-top: 1px solid var(--border-subtle);">
+      <div class="section-tag">Standard Operating Procedure</div>
+      <h2 class="section-heading">4-Stage Smartphone Capture Protocol</h2>
+      <p class="section-description">
+        Indoor photogrammetry requires strict spatial parallax rather than casual video recording. 
+        Our protocol ensures robust Structure-from-Motion registration on everyday mobile devices.
+      </p>
+
+      <div class="grid-4">
+        <div class="card">
+          <div class="card-step">PHASE 01</div>
+          <h3 class="card-title">Room Conditioning</h3>
+          <p class="card-text">
+            Clear floor pathways, turn off oscillating fans, stabilize diffuse indoor lighting, 
+            and place high-contrast anchor patterns on bare, featureless walls.
+          </p>
+        </div>
+
+        <div class="card">
+          <div class="card-step">PHASE 02</div>
+          <h3 class="card-title">Camera Configuration</h3>
+          <p class="card-text">
+            Standard 1.0× wide lens in 1080p @ 30 fps landscape mode. Mandatory AE/AF lock 
+            freezes exposure and focus, preserving photometric consistency across views.
+          </p>
+        </div>
+
+        <div class="card">
+          <div class="card-step">PHASE 03</div>
+          <h3 class="card-title">Dual-Loop Trajectory</h3>
+          <p class="card-text">
+            Execute a 45–75 second heel-to-toe "ninja walk" (0.5–0.8 m/s). Outer perimeter pass 
+            followed by an inward-facing interior orbit around central furniture.
+          </p>
+        </div>
+
+        <div class="card">
+          <div class="card-step">PHASE 04</div>
+          <h3 class="card-title">Stationary Buffers</h3>
+          <p class="card-text">
+            Hold completely still for 3–4 seconds at the start and end of recording to absorb 
+            screen-tap vibration within the automated 5% trim filter.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Technical Specifications Section -->
+    <section id="specs" class="section-wrapper" style="border-top: 1px solid var(--border-subtle);">
+      <div class="section-tag">Engineering Specifications</div>
+      <h2 class="section-heading">Reconstruction & Delivery Benchmarks</h2>
+      <p class="section-description">
+        Validated metrics for local browser delivery and remote 3D Gaussian radiance field optimization.
+      </p>
+
+      <table class="specs-table">
+        <thead>
+          <tr>
+            <th>Pipeline Attribute</th>
+            <th>Specification</th>
+            <th>Implementation Detail</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Spatial Representation</strong></td>
+            <td>3D Gaussian Splatting (3DGS)</td>
+            <td>Explicit point radiance field with covariance matrices</td>
+            <td><span class="badge-ok">ACTIVE</span></td>
+          </tr>
+          <tr>
+            <td><strong>Web Binary Format</strong></td>
+            <td>Compact `.splat` (32 bytes / Gaussian)</td>
+            <td>Position (f32*3), Scale (f32*3), RGBA (u8*4), Rot (u8*4)</td>
+            <td><span class="badge-ok">VERIFIED</span></td>
+          </tr>
+          <tr>
+            <td><strong>Scene Footprint</strong></td>
+            <td>11.8 MB (369,006 Gaussians)</td>
+            <td>Streams over HTTP with sub-2s initial load</td>
+            <td><span class="badge-ok">VERIFIED</span></td>
+          </tr>
+          <tr>
+            <td><strong>Client Rendering Runtime</strong></td>
+            <td>Three.js v0.170.0 + WebGL2</td>
+            <td>WebAssembly depth sort worker running at 60 FPS</td>
+            <td><span class="badge-ok">ACTIVE</span></td>
+          </tr>
+          <tr>
+            <td><strong>Navigation Telemetry</strong></td>
+            <td>Live XYZ Coordinate HUD</td>
+            <td>First-person WASD fly roaming & mouse orbit/pan</td>
+            <td><span class="badge-ok">VERIFIED</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Footer -->
+    <footer style="border-top: 1px solid var(--border-subtle); padding: 40px 24px; text-align: center; color: var(--text-dim); font-size: 0.85rem;">
+      <p>Techfest IIT Bombay 2026–27 &bull; Namma Space (Round 1: 3D Reconstruction & Roaming)</p>
+      <p style="margin-top: 6px;">Engineered with Roomsplat, Inria 3D Gaussian Splatting, COLMAP SfM, and Three.js.</p>
+    </footer>
+
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- VIEW 2: IMMERSIVE 3D SPATIAL VIEWER VIEW                                  -->
+  <!-- ========================================================================= -->
+  <div id="viewer-view" class="view-section view-hidden">
+    
+    <!-- 3D Canvas Mount Point -->
+    <div id="canvas-container"></div>
+
+    <!-- Viewer Top Bar Overlay -->
+    <div class="viewer-topbar">
+      <button id="viewer-btn-back" class="btn-back">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        Return to Overview
+      </button>
+
+      <div class="viewer-scene-name">
+        <span style="color: var(--accent-cyan); margin-right: 6px;">●</span> Test Room — Namma Space Spatial Twin
+      </div>
+
+      <div class="viewer-actions">
+        <button id="btn-fullscreen" class="btn-icon" title="Toggle Fullscreen">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Live Telemetry Coordinates HUD -->
+    <div id="viewer-coords" class="viewer-hud-coords">
+      x:  -4.408  y:   0.569  z:   0.226
+    </div>
+
+    <!-- Controls Guide HUD with Live Key Feedback -->
+    <div class="viewer-hud-controls">
+      <div class="hud-controls-title">
+        <span>NAVIGATION</span>
+        <span style="font-size: 0.68rem; color: var(--accent-cyan); font-weight: 500;">FIRST-PERSON FLY</span>
+      </div>
+      <div class="hud-key-group">
+        <span style="font-size: 0.72rem; width: 60px; display: inline-block;">Fly:</span>
+        <span id="key-w" class="hud-key">W</span>
+        <span id="key-a" class="hud-key">A</span>
+        <span id="key-s" class="hud-key">S</span>
+        <span id="key-d" class="hud-key">D</span>
+      </div>
+      <div style="font-size: 0.7rem; color: var(--text-dim); line-height: 1.5;">
+        Left-Drag &bull; Orbit View<br>
+        Right-Drag &bull; Pan Lateral<br>
+        Scroll Wheel &bull; Zoom / Dolly
+      </div>
+    </div>
+
+    <!-- Loading State Overlay -->
+    <div id="viewer-loading" class="viewer-loading">
+      <div class="loading-spinner"></div>
+      <div class="loading-text">Initializing 3D Spatial Twin</div>
+      <div class="loading-progress-bar">
+        <div id="loading-progress-fill" class="loading-progress-fill"></div>
+      </div>
+      <div id="loading-status-detail" class="loading-status-detail">Connecting to scene stream…</div>
+    </div>
+
+    <!-- Error State Overlay -->
+    <div id="viewer-error" class="viewer-error" style="display: none;">
+      <div class="error-card">
+        <div class="error-icon">⚠️</div>
+        <div class="error-title">Unable to Load 3D Scene</div>
+        <div id="error-description-text" class="error-description">
+          The 3D Gaussian Splat model could not be loaded into the WebGL2 context.
+        </div>
+        <div style="display: flex; gap: 12px; justify-content: center;">
+          <button id="error-btn-retry" class="btn-primary">
+            Retry Loading
+          </button>
+          <button id="error-btn-back" class="btn-secondary">
+            Back to Overview
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Application Logic -->
+  <script type="module">
+    import { NammaSpaceViewer } from './viewer.js';
+
+    let viewerInstance = null;
+    const landingView = document.getElementById('landing-view');
+    const viewerView = document.getElementById('viewer-view');
+
+    function showViewer() {
+      landingView.classList.add('view-hidden');
+      viewerView.classList.remove('view-hidden');
+      window.scrollTo(0, 0);
+
+      if (!viewerInstance) {
+        viewerInstance = new NammaSpaceViewer({
+          scenePath: './scene.splat',
+          camerasPath: './cameras.json',
+        });
+      }
+      viewerInstance.load();
+    }
+
+    function showLanding() {
+      viewerView.classList.add('view-hidden');
+      landingView.classList.remove('view-hidden');
+      if (viewerInstance) {
+        viewerInstance.dispose();
+        viewerInstance = null;
+      }
+    }
+
+    // Attach Event Listeners
+    document.getElementById('nav-btn-launch')?.addEventListener('click', showViewer);
+    document.getElementById('hero-btn-launch')?.addEventListener('click', showViewer);
+    document.getElementById('preview-btn-play')?.addEventListener('click', showViewer);
+    document.getElementById('viewer-btn-back')?.addEventListener('click', showLanding);
+    document.getElementById('error-btn-back')?.addEventListener('click', showLanding);
+    document.getElementById('error-btn-retry')?.addEventListener('click', () => {
+      if (viewerInstance) viewerInstance.load();
+    });
+
+    // Fullscreen Toggle
+    document.getElementById('btn-fullscreen')?.addEventListener('click', () => {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      } else {
+        document.exitFullscreen().catch(() => {});
+      }
+    });
+
+    // Handle Escape key to return or exit fullscreen
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !viewerView.classList.contains('view-hidden')) {
+        if (!document.fullscreenElement) {
+          showLanding();
+        }
+      }
+    });
+  </script>
+
+</body>
+</html>
