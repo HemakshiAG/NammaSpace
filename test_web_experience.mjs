@@ -87,17 +87,16 @@ async function runTest() {
   console.log(`Navigating directly to ${TARGET_URL}...`);
   await send("Page.navigate", { url: TARGET_URL });
 
-  // Wait for document readyState complete
-  for (let i = 0; i < 20; i++) {
+  // Wait for document to load and hero-title element to be present
+  let heroTitle = null;
+  for (let i = 0; i < 30; i++) {
     await sleep(500);
-    const readyState = await evalExpr("document.readyState");
-    if (readyState === 'complete') break;
+    heroTitle = await evalExpr("document.querySelector('.hero-title')?.innerText");
+    if (heroTitle) break;
   }
 
   // ── 1. Validate Landing Page ────────────────────────────────────────────────
   console.log("\n--- Validating Landing Page Elements ---");
-  await sleep(1000);
-  const heroTitle = await evalExpr("document.querySelector('.hero-title')?.innerText");
   const landingHidden = await evalExpr("document.getElementById('landing-view')?.classList.contains('view-hidden')");
   const workflowCardCount = await evalExpr("document.querySelectorAll('#workflow .card')?.length");
 
