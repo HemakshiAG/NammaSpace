@@ -52,7 +52,7 @@ def audit():
         (WORKSPACE / "web" / "styles.css", 4000),
         (WORKSPACE / "web" / "viewer.js", 3000),
         (WORKSPACE / "web" / "coi-serviceworker.js", 1000),
-        (WORKSPACE / "web" / "scene.splat", 5_000_000),
+        (WORKSPACE / "web" / "scene.splat", 300_000),
         (WORKSPACE / "web" / "cameras.json", 100),
         (WORKSPACE / "web" / "_headers", 50),
     ]

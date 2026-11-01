@@ -1,5 +1,6 @@
 // Namma Space — 3D Gaussian Splatting Spatial Viewer Engine
 import * as GaussianSplats3D from 'https://cdn.jsdelivr.net/npm/@mkkellogg/gaussian-splats-3d@0.4.6/build/gaussian-splats-3d.module.js';
+import * as THREE from 'three';
 
 export class NammaSpaceViewer {
   constructor(options = {}) {
@@ -17,7 +18,20 @@ export class NammaSpaceViewer {
     this.scenePath = options.scenePath || './scene.splat';
     this.camerasPath = options.camerasPath || './cameras.json';
 
-    this.keyState = { KeyW: false, KeyA: false, KeyS: false, KeyD: false };
+    this.keyState = {
+      KeyW: false,
+      KeyA: false,
+      KeyS: false,
+      KeyD: false,
+      ArrowUp: false,
+      ArrowDown: false,
+      ArrowLeft: false,
+      ArrowRight: false,
+      KeyQ: false,
+      KeyE: false,
+      ShiftLeft: false,
+      ShiftRight: false,
+    };
     this.initKeyListeners();
   }
 
@@ -38,7 +52,16 @@ export class NammaSpaceViewer {
   }
 
   updateKeyHUD(code, active) {
-    const keyMap = { KeyW: 'key-w', KeyA: 'key-a', KeyS: 'key-s', KeyD: 'key-d' };
+    const keyMap = {
+      KeyW: 'key-w',
+      ArrowUp: 'key-w',
+      KeyA: 'key-a',
+      ArrowLeft: 'key-a',
+      KeyS: 'key-s',
+      ArrowDown: 'key-s',
+      KeyD: 'key-d',
+      ArrowRight: 'key-d',
+    };
     const el = document.getElementById(keyMap[code]);
     if (el) {
       el.classList.toggle('key-active', active);
@@ -48,14 +71,15 @@ export class NammaSpaceViewer {
   async load() {
     this.hideError();
     this.showLoading('Connecting to 3D reconstruction stream...');
+    console.log('[NammaViewer] Starting load()...');
 
     try {
-      // 1. Fetch initial camera position from cameras.json
+      console.log('[NammaViewer] Step 1: fetching cameras.json...');
       let camPos = undefined;
       let camLookAt = undefined;
 
       try {
-        const response = await fetch(this.camerasPath);
+        const response = await fetch(this.camerasPath + '?t=' + Date.now());
         if (response.ok) {
           const cd = await response.json();
           if (cd && cd.cameras && cd.cameras.length > 0) {
@@ -64,37 +88,42 @@ export class NammaSpaceViewer {
             const p = cam.pos, fwd = cam.forward;
             camPos = p;
             camLookAt = [p[0] + fwd[0], p[1] + fwd[1], p[2] + fwd[2]];
+            console.log('[NammaViewer] Camera pose loaded:', { camPos, camLookAt });
           }
         }
       } catch (err) {
         console.warn('Could not read cameras.json, falling back to default camera placement.', err);
       }
 
-      // 2. Initialize GaussianSplats3D Viewer
+      console.log('[NammaViewer] Step 2: Creating GaussianSplats3D.Viewer instance...');
       const viewerOpts = {
         cameraUp: [0, -1, 0],
         selfDrivenMode: true,
         useBuiltInControls: true,
         rootElement: this.container,
         renderMode: GaussianSplats3D.RenderMode.Always,
+        antialiased: true,
       };
 
-      if (camPos) viewerOpts.initialCameraPosition = camPos;
-      if (camLookAt) viewerOpts.initialCameraLookAt = camLookAt;
+      if (camPos && camLookAt) {
+        viewerOpts.initialCameraPosition = camPos;
+        viewerOpts.initialCameraLookAt = camLookAt;
+      }
 
-      // Clean up prior instance if re-initializing
       if (this.viewer) {
         try { this.viewer.dispose(); } catch (_) {}
         this.container.innerHTML = '';
       }
 
       this.viewer = new GaussianSplats3D.Viewer(viewerOpts);
+      console.log('[NammaViewer] Step 3: Viewer instantiated. Adding splat scene:', this.scenePath);
 
-      // 3. Load Splat Scene with progress tracking
       const sceneOpts = {
+        format: GaussianSplats3D.SceneFormat.Splat,
         splatAlphaRemovalThreshold: 5,
         showLoadingUI: false,
         onProgress: (pct) => {
+          console.log(`[NammaViewer Progress] ${pct.toFixed(1)}%`);
           if (this.progressFill) this.progressFill.style.width = `${pct}%`;
           if (this.statusDetail) {
             if (pct < 100) {
@@ -106,9 +135,10 @@ export class NammaSpaceViewer {
         },
       };
 
-      await this.viewer.addSplatScene(this.scenePath, sceneOpts);
+      const splatUrl = this.scenePath.includes('?') ? this.scenePath : `${this.scenePath}?v=${Date.now()}`;
+      await this.viewer.addSplatScene(splatUrl, sceneOpts);
+      console.log('[NammaViewer] Step 4: addSplatScene complete! Starting viewer...');
 
-      // Scene is ready
       this.viewer.start();
       this.isRunning = true;
       this.hideLoading();
@@ -124,18 +154,68 @@ export class NammaSpaceViewer {
     if (this.animationFrameId) cancelAnimationFrame(this.animationFrameId);
 
     const fmt = (n) => (n !== undefined ? n.toFixed(3).padStart(7) : '  0.000');
+    let lastTime = performance.now();
 
-    const tick = () => {
+    const forward = new THREE.Vector3();
+    const right = new THREE.Vector3();
+    const up = new THREE.Vector3();
+    const moveDelta = new THREE.Vector3();
+
+    const tick = (now) => {
+      const dt = Math.min((now - lastTime) / 1000, 0.1);
+      lastTime = now;
+
       if (this.isRunning && this.viewer && this.viewer.camera) {
-        const p = this.viewer.camera.position;
+        const cam = this.viewer.camera;
+        const p = cam.position;
+
         if (p && this.coordsEl) {
           this.coordsEl.textContent = `x:${fmt(p.x)}  y:${fmt(p.y)}  z:${fmt(p.z)}`;
+        }
+
+        // --- 6-DOF First-Person Flight Controller ---
+        let baseSpeed = 2.0; // units per second
+        if (this.keyState.ShiftLeft || this.keyState.ShiftRight) {
+          baseSpeed *= 2.2; // sprint
+        }
+        const moveDist = baseSpeed * dt;
+
+        cam.getWorldDirection(forward);
+        up.copy(cam.up).normalize();
+        right.crossVectors(forward, up).normalize();
+
+        moveDelta.set(0, 0, 0);
+
+        if (this.keyState.KeyW || this.keyState.ArrowUp) {
+          moveDelta.addScaledVector(forward, moveDist);
+        }
+        if (this.keyState.KeyS || this.keyState.ArrowDown) {
+          moveDelta.addScaledVector(forward, -moveDist);
+        }
+        if (this.keyState.KeyD || this.keyState.ArrowRight) {
+          moveDelta.addScaledVector(right, moveDist);
+        }
+        if (this.keyState.KeyA || this.keyState.ArrowLeft) {
+          moveDelta.addScaledVector(right, -moveDist);
+        }
+        if (this.keyState.KeyE) {
+          moveDelta.addScaledVector(up, moveDist);
+        }
+        if (this.keyState.KeyQ) {
+          moveDelta.addScaledVector(up, -moveDist);
+        }
+
+        if (moveDelta.lengthSq() > 0) {
+          cam.position.add(moveDelta);
+          if (this.viewer.controls && this.viewer.controls.target) {
+            this.viewer.controls.target.add(moveDelta);
+          }
         }
       }
       this.animationFrameId = requestAnimationFrame(tick);
     };
 
-    tick();
+    this.animationFrameId = requestAnimationFrame(tick);
   }
 
   showLoading(msg) {
