@@ -166,7 +166,7 @@ Since Inria 3DGS training requires an NVIDIA GPU with CUDA, evaluators can repro
 
 Namma Space builds upon foundational open-source computer vision research:
 
-1. **Roomsplat:** (`Ahmedn1/roomsplat`) — MIT License. CLI pipeline orchestrator for FFMPEG, COLMAP, and 3DGS.
+1. **Roomsplat:** — MIT License. CLI pipeline orchestrator for FFMPEG, COLMAP, and 3DGS.
 2. **3D Gaussian Splatting:** (Inria & Max Planck Institute, Kerbl et al., SIGGRAPH 2023) — Inria Non-Commercial Research License. Core radiance field mathematical formulation and CUDA rasterization.
 3. **COLMAP:** (Schönberger et al., CVPR/ECCV 2016) — BSD 3-Clause License. Structure-from-Motion camera pose estimation.
 4. **GaussianSplats3D:** (Mark Kellogg et al.) — MIT License. WebGL2 Gaussian Splatting renderer and WebAssembly radix depth sorter.
