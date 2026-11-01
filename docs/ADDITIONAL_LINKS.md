@@ -15,7 +15,7 @@ Every link in this document has been verified in a clean browser session with no
 |---|---|---|
 | **Public Web Portal & 3D Viewer** | [https://github.com/HemakshiAG/NammaSpace](https://github.com/HemakshiAG/NammaSpace) | Primary submission portal with live interactive 3D Gaussian Splat viewer in `/web/`. Zero authentication required. |
 | **Official Source Repository** | [https://github.com/HemakshiAG/NammaSpace](https://github.com/HemakshiAG/NammaSpace) | Complete source code, documentation, test suites, and deployment assets. |
-| **Cloud GPU 3DGS Training Notebook** | [Open in Google Colab](https://colab.research.google.com/github/HemakshiAG/NammaSpace/blob/main/notebooks/NammaSpace_Reconstruction_Colab.ipynb) | 1-Click self-healing reconstruction pipeline for NVIDIA T4 GPU with `--no-build-isolation` CUDA compilation. |
+| **Cloud GPU 3DGS Training Notebook** | [Open in Google Colab](https://colab.research.google.com/github/HemakshiAG/NammaSpace/blob/main/notebooks/NammaSpace_Reconstruction_Colab.ipynb) | 1-Click self-healing reconstruction pipeline for NVIDIA T4 GPU with precompiled CUDA rasterizers (Option A). Detailed setup guide in [PIPELINE_SETUP.md](PIPELINE_SETUP.md). |
 | **Demonstration Video Presentation** | *[Insert Google Drive / YouTube Video Link Here]* | 3–5 minute high-definition walkthrough demonstrating capture, reconstruction, and live WASD roaming. |
 | **Local Verification Host** | `http://127.0.0.1:8080/index.html` | Local HTTP daemon with cross-origin isolation headers (`serve_web.py`). |
 

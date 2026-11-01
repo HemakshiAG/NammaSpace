@@ -133,17 +133,17 @@ python serve_web.py
 # http://127.0.0.1:8080/index.html
 ```
 
-### Option 2: Run End-to-End Reconstruction on Cloud GPU (Free Google Colab)
+### Option 2: Run End-to-End Reconstruction on Cloud GPU (Option A: 1-Click Google Colab)
 
-Since Inria 3DGS training requires an NVIDIA GPU with CUDA, open our self-healing 1-click Colab notebook:
+Since Inria 3DGS training requires an NVIDIA GPU with CUDA, evaluators can reproduce the full photogrammetric pipeline on Google Colab's free T4 GPU without any local installation:
 
 👉 **[Open NammaSpace Reconstruction in Google Colab](https://colab.research.google.com/github/HemakshiAG/NammaSpace/blob/main/notebooks/NammaSpace_Reconstruction_Colab.ipynb)**
 
-1. Set Runtime to **T4 GPU** (`Runtime → Change runtime type → T4 GPU`).
-2. Run Step 1 to compile CUDA rasterizers with `--no-build-isolation`.
-3. Upload your 45–75 second room walkthrough video (`my_room.mp4`).
-4. Run Step 2 to generate `scene.splat` and `cameras.json`.
-5. Download the zip bundle and place the files into `web/`.
+1. **Select GPU:** Go to `Runtime → Change runtime type` and select **T4 GPU** (free tier).
+2. **Environment & CUDA Setup:** Run **Step 1** to configure Python 3.10 and load precompiled rasterizers instantly (~45s).
+3. **Upload Video & Train:** Run **Step 2** and upload your room walkthrough video (`.mp4`), or use the bundled sample (`test_room.mp4`).
+4. **Auto-Export Digital Twin:** The pipeline runs frame extraction, PyColmap SfM pose estimation, 30,000 iterations of 3DGS training, and automatically downloads `namma_space_assets.zip` containing `scene.splat` and `cameras.json`.
+5. *(Full detailed setup documentation available in [docs/PIPELINE_SETUP.md](docs/PIPELINE_SETUP.md)).*
 
 ---
 

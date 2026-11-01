@@ -4,11 +4,55 @@
 **Target Engine:** [Roomsplat](https://github.com/Ahmedn1/roomsplat)  
 **Host Environment:** Windows 11 Home (AMD Ryzen 5 220 APU w/ Radeon 740M Graphics, 512 MB Dedicated VRAM)  
 **Date:** October 28, 2026  
-**Status:** Phase 1 Completed — Pipeline Validated & Documented  
+**Status:** Validated & Documented (Local Evaluation + 1-Click Cloud GPU Reproduction)  
 
 ---
 
-## 1. Executive Summary & Verification Verdict
+## 1. Evaluator Quickstart: 1-Click Cloud GPU Reconstruction Pipeline (Option A: Google Colab)
+
+To enable evaluators and competition judges to reproduce the complete end-to-end 3D Gaussian Splatting reconstruction without needing local NVIDIA GPUs or complex CUDA compilers, Namma Space provides an autonomous 1-click cloud notebook.
+
+### 🔗 Direct 1-Click Cloud Notebook Link
+👉 **[Open NammaSpace Reconstruction in Google Colab](https://colab.research.google.com/github/HemakshiAG/NammaSpace/blob/main/notebooks/NammaSpace_Reconstruction_Colab.ipynb)**
+
+### 📋 4-Step Reproduction Protocol for Evaluators
+
+#### Step 1: Select Cloud Hardware (T4 GPU)
+1. Open the notebook using the Google Colab link above.
+2. In the top menu bar, click: **Runtime** $\to$ **Change runtime type**.
+3. Under **Hardware accelerator**, select **T4 GPU** (free tier).
+4. Click **Save**.
+
+#### Step 2: Run Step 1 (Environment & Precompiled CUDA Setup)
+Click the Play button on **Step 1: Automated Environment Setup & Instant CUDA Rasterizer Load**.
+* **What it does automatically:**
+  * Installs an isolated Python 3.10 environment via Micromamba.
+  * Installs PyTorch 2.0.1 matching CUDA 11.8 ABI (`cu118`).
+  * Registers official CUDA 11 runtime libraries (`libcudart.so.11.0`) into the OS dynamic linker.
+  * Clones the Roomsplat and Inria Gaussian Splatting repositories with universal camera model patches.
+  * Installs precompiled, pre-built binary wheels for `diff_gaussian_rasterization` and `simple_knn`.
+* **Execution time:** ~45–60 seconds (instant load, zero compilation wait time).
+
+#### Step 3: Run Step 2 (Upload Video & Autonomous Training)
+Click the Play button on **Step 2: Video Discovery, COLMAP SfM & 30k 3DGS Training**.
+1. When prompted by the Colab upload widget, select your smartphone walkthrough video (`.mp4` or `.mov`), or use the bundled sample walkthrough (`test_room.mp4`).
+2. The pipeline autonomously executes:
+   * **Stage 1 (Frame Extraction):** Subsamples video at 1.5–2.5 fps and filters motion blur via Laplacian variance.
+   * **Stage 2 (Camera Pose Estimation):** Executes PyColmap covariant SIFT extraction and loop-closure matching to compute 6-DoF camera matrices and sparse 3D point cloud.
+   * **Stage 3 (3DGS Radiance Field Optimization):** Runs 30,000 iterations densifying and optimizing 3D Gaussian ellipsoids.
+   * **Stage 4 (Binary Surfel Export):** Compresses the 3D radiance field into the high-efficiency 32-byte binary format (`scene.splat`) and writes camera trajectory (`cameras.json`).
+
+#### Step 4: Download & View the 3D Spatial Twin
+* Colab automatically packages and triggers download for `namma_space_assets.zip` containing:
+  * `scene.splat` (compact binary 3D Gaussian radiance model, ~11–12 MB)
+  * `cameras.json` (registered camera poses and initial overview position)
+* **To view the reconstructed model:**
+  * Place `scene.splat` and `cameras.json` into the `web/` folder and open `http://127.0.0.1:8080/index.html`.
+  * Or push to your repository to immediately update your live Vercel deployment!
+
+---
+
+## 2. Executive Summary & Local Verification Verdict
 
 We conducted a complete Phase 1 installation and validation of Roomsplat using the host machine's isolated Python environment and a genuine test room video (`test_room.mp4`).
 
